@@ -1,0 +1,37 @@
+# This file contains you default application configuration. It is included within the Docker image
+# The values are then optionally overridden in different environment using environment variables
+# defined in the deployment.yml and pulled from the configmaps.
+
+
+management.server.port: 8081
+server:
+  port : 8081
+  servlet:
+    context-path: /
+
+application:
+  name: orderline-service-api
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  jackson:
+    mapper:
+      ACCEPT_CASE_INSENSITIVE_PROPERTIES: true
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQL9Dialect
+    properties:
+      org:
+        hibernate:
+          envers:
+            do_not_audit_optimistic_locking_field: false
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults: false
+  datasource:
+    url: jdbc:postgresql://localhost:5432/order
+    username: postgres
+    password: password
+
+#errorhandler.api.url: http://localhost:8080/errorhandler/
+errorhandler.api.url: //errorhandler-service-app-kotlin-soia-dev.apps.ocp-dc8-03.ikeadt.com/errorhandler/

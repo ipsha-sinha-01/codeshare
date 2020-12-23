@@ -1,0 +1,937 @@
+{
+    "definitions": {
+        "mandNumber":       { "type":"number" },
+        "nullNumber":       { "oneOf": [{"$ref": "#/definitions/mandNumber"}, {"type":"null"}] },
+        "mandDate":         { "type":"string", "format":"date-time" },
+        "nullDate":         { "oneOf": [{"$ref": "#/definitions/mandDate"}, {"type":"null"}] },
+        "mandString20":     { "type":"string", "maxLength": 20 },
+        "nullString20":     { "oneOf": [{"$ref": "#/definitions/mandString20"}, {"type":"null"}] },
+        "mandString24":     { "type":"string", "maxLength": 24 },
+        "nullString24":     { "oneOf": [{"$ref": "#/definitions/mandString24"}, {"type":"null"}] },
+        "mandString30":     { "type":"string", "maxLength": 30 },
+        "nullString30":     { "oneOf": [{"$ref": "#/definitions/mandString30"}, {"type":"null"}] },
+        "mandString40":     { "type":"string", "maxLength": 40 },
+        "nullString40":     { "oneOf": [{"$ref": "#/definitions/mandString40"}, {"type":"null"}] },
+        "mandString50":     { "type":"string", "maxLength": 50 },
+        "nullString50":     { "oneOf": [{"$ref": "#/definitions/mandString50"}, {"type":"null"}] },
+        "mandString100":    { "type":"string", "maxLength": 100 },
+        "nullString100":    { "oneOf": [{"$ref": "#/definitions/mandString100"}, {"type":"null"}] },
+
+        "mandStatusCode":   { "type": "integer", "minimum": 0, "maximum": 9999 },
+
+        "mandLineNo":       { "type": "integer", "minimum": 0, "maximum": 99999 },
+        "nullLineNo":       { "oneOf": [{"$ref": "#/definitions/mandLineNo"}, {"type":"null"}] },
+
+        "mandItemID":       { "type": "string", "maxLength": 18, "pattern": "^[A-Z]{3}[0-9]{8,15}$" },
+        "nullItemID":       { "oneOf": [{"$ref": "#/definitions/mandItemID"}, {"type":"null"}] },
+
+        "mandSrcKey":       { "type": "string", "maxLength": 30, "pattern": "^[0-9A-Z]{1,24}\\.[A-Z]{2,5}$" },
+        "nullSrcKey":       { "oneOf": [{"$ref": "#/definitions/mandSrcKey"}, {"type":"null"}] },
+        "mandOrderNo":      { "type": "string", "maxLength": 30, "pattern": "^[0-9A-Z]{1,19}\\.(([A-Z]{2,5})|(A[0-9]{2}))$" },
+        "nullOrderNo":      { "oneOf": [{"$ref": "#/definitions/mandOrderNo"}, {"type":"null"}] },
+        "mandGeoArea":      { "type": "string", "maxLength": 11, "pattern": "^[A-Z]{2,5}\\.[0-9A-Z]{2,5}$" },
+        "nullGeoArea":      { "oneOf": [{"$ref": "#/definitions/mandGeoArea"}, {"type":"null"}] },
+        "mandUnit":         { "type": "string", "maxLength": 15, "pattern": "^[A-Z]{2,5}\\.[A-Z]{2,3}\\.[0-9A-Z]{3,5}$" },
+        "nullUnit":         { "oneOf": [{"$ref": "#/definitions/mandUnit"}, {"type":"null"}] },
+
+        "OrderHeader": {
+            "type": "object",
+            "description": "An Order may be either a SalesOrder or a InternalReturn Order.",
+            "properties": {
+                "MetaInsertDate": {
+                    "$ref": "#/definitions/mandDate",
+                    "description": "Database created timestamp of insert of row.",
+                    "examples": [ "2019-09-01T20:50:54.405" ]
+                },
+                "MetaFilterDate": {
+                    "$ref": "#/definitions/mandDate",
+                    "description": "Database created timestamp of latest update of row.",
+                    "examples": [ "2019-09-06T15:03:45.378" ]
+                },
+                "Event": {
+                    "$ref": "#/definitions/mandString50",
+                    "description": "Event being captured, which might be prefixed with 'augmented.'. Event is either in ['DataChange', 'Resend'] or it applies to all elements where Event = ProjStatus and ProjStatusCode<>ProjStatusCodeOld (e.g. when EVENT='Dispatch').",
+                    "examples": [ "DataChange" ]
+                },
+                "MsgSource": {
+                    "$ref": "#/definitions/mandString30",
+                    "description": "Event source, e.g. ITM, Centiro, ISOM etc, or SOIA.",
+                    "examples": [ "ISOM" ]
+                },
+                "OrderType": {
+                    "$ref": "#/definitions/mandString40",
+                    "enum": [ "0001", "0003", "0005" ],
+                    "description": "OrderType may be one of : 0001 == SalesOrder, 0003 == InternalReturnOrder, 0005 == PurchaseOrder.",
+                    "examples": [ "0001" ]
+                },
+                "OrderSubType": {
+                    "$ref": "#/definitions/nullString100",
+                    "examples": [ null, "ShowRoom Store=STO.492 ZipStore=STO.492" ],
+                    "description": "Order subtype, e.g. ShowRoomOrder. For the ShowRoom order the OrderSubType will be 'ShowRoom [Store=STO.<BuCode>] [ZipStore=STO.<BuCode>]' essentially saying there will be the tag 'ShowRoom' and the optional tags Store, ZipStore."
+                },
+                "OrderNo": {
+                    "$ref": "#/definitions/mandOrderNo",
+                    "description": "Unique identifier of the Sales/InternalReturn Order.",
+                    "examples": [ "1049860405.A01" ]
+                },
+                "SrcOhKey": {
+                    "$ref": "#/definitions/mandSrcKey",
+                    "description": "Technical key of OrderHeader in source system (usually ISOM).",
+                    "examples": [ "20201224121314567890123.GB" ]
+                },
+                "ZipCode": {
+                    "$ref": "#/definitions/nullString24",
+                    "description": "Delivery ZIP code.",
+                    "examples": [ "E14 9JU" ]
+                },
+                "EntryType": {
+                    "$ref": "#/definitions/nullString20",
+                    "description": "Order entry type. Can be 'INTERNET', 'STORE' or something else.",
+                    "examples": [ "INTERNET" ]
+                },
+                "CreateDate": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date when order was created.",
+                    "examples": [ "2019-09-01T20:50:52" ]
+                },
+                "DeliveredDate": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date when the Order was delivered to the customer.",
+                    "examples": [ "2019-09-06T09:55:00" ]
+                },
+                "GaSell": {
+                    "$ref": "#/definitions/mandGeoArea",
+                    "description": "Geographic sell area. 'CTY' followed by ISO-2 of the country/region of the enterprise that is selling, e.g. 'SE'.",
+                    "examples": [ "CTY.GB" ]
+                },
+                "UnitSell": {
+                    "$ref": "#/definitions/mandUnit",
+                    "description": "Selling unit.",
+                    "examples": [ "BU.STO.472" ]
+                },
+                "OriginalTotalAmount": {
+                    "$ref": "#/definitions/nullNumber",
+                    "description": "Actual advance payment.",
+                    "examples": [ 52.95 ]
+                },
+                "CurrencyCode": {
+                    "$ref": "#/definitions/nullString20",
+                    "description": "Currency e.g. SEK",
+                    "examples": [ "GBP" ]
+                },
+                "VatValue": {
+                    "$ref": "#/definitions/nullNumber",
+                    "description": "Sum of Vat Charges for all Order Lines in this Order.",
+                    "examples": [ 1.66 ]
+                },
+                "DeliveryValue": {
+                    "$ref": "#/definitions/nullNumber",
+                    "description": "Sum of Delivery Value for all Order Lines in this Order.",
+                    "examples": [ 52.95 ]
+                },
+                "ServiceType": {
+                    "$ref": "#/definitions/nullString24",
+                    "description": "May be e.g. HOME_DELIVERY, CLICK_COLLECT, PUOP and PUP.",
+                    "examples": [ "HOME_DELIVERY", "CLICK_COLLECT_STORE", "LOCKER", "PUOP", "PUP" ]
+                },
+                "PaymentMethod": {
+                    "$ref": "#/definitions/nullString24",
+                    "description": "How the order was/is going to be paid for, e.g. PAYMENT_ON_DELIVERY, CASH etc.",
+                    "examples": [ "CASH", "PAYMENT_ON_DELIVERY" ]
+                },
+                "PaymentStatus": {
+                    "$ref": "#/definitions/nullString24",
+                    "description": "If the order has been paid for, e.g. PAID, PARTIALLY PAID, UNPAID etc.",
+                    "examples": [ "PAID", "PARTIALLY PAID", "UNPAID" ]
+                },
+                "ProjStatusCode": {
+                    "$ref": "#/definitions/mandStatusCode",
+                    "description": "Projected (CompSO calculated) status code.",
+                    "examples": [ 1000, 8000 ]
+                },
+                "ProjStatusCodeOld": {
+                    "$ref": "#/definitions/mandStatusCode",
+                    "description": "Previous projected (SOIA calculated) status code, i.e. the ProjStatusCode from the previous message.",
+                    "examples": [ 0, 1000, 8000 ]
+                },
+                "ProjStatus": {
+                    "$ref": "#/definitions/mandString50",
+                    "description": "Projected (CompSO calculated) status, e.g. Dispatched, Delivered etc.",
+                    "examples": [ "Created", "Delivered", "Cancelled" ]
+                },
+                "StatusCode": {
+                    "$ref": "#/definitions/mandStatusCode",
+                    "description": "Assumed ISOM status code.",
+                    "examples": [ 1000, 8000 ]
+                },
+                "StatusCodeOld": {
+                    "$ref": "#/definitions/mandStatusCode",
+                    "description": "Assumed ISOM status code of previous message.",
+                    "examples": [ 0, 1000, 8000 ]
+                },
+                "Status": {
+                    "$ref": "#/definitions/mandString50",
+                    "description": "Assumed ISOM status, e.g. Dispatched, Delivered etc.",
+                    "examples": [ "Created", "Delivered", "Cancelled" ]
+                },
+                "WorkOrders": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/WorkOrder"
+                    }
+                },
+                "OrderLines": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/OrderLine"
+                    }
+                }
+            },
+            "required": [
+                "MetaInsertDate",
+                "MetaFilterDate",
+                "Event",
+                "MsgSource",
+                "OrderType",
+                "OrderSubType",
+                "OrderNo",
+                "ZipCode",
+                "EntryType",
+                "CreateDate",
+                "DeliveredDate",
+                "GaSell",
+                "UnitSell",
+                "OriginalTotalAmount",
+                "CurrencyCode",
+                "VatValue",
+                "DeliveryValue",
+                "ServiceType",
+                "PaymentMethod",
+                "PaymentStatus",
+                "ProjStatusCode",
+                "ProjStatusCodeOld",
+                "ProjStatus",
+                "StatusCode",
+                "StatusCodeOld",
+                "Status",
+                "WorkOrders",
+                "OrderLines"
+            ]
+        },
+        "WorkOrder": {
+            "type": "object",
+            "description": "The Sales Order is built by 1 or more WorkOrders, generally speaking being handled as one deliverable unit.",
+            "properties": {
+                "MetaInsertDate": {
+                    "$ref": "#/definitions/mandDate",
+                    "description": "Database created timestamp of insert of row.",
+                    "examples": [ "2019-09-01T20:50:54.405" ]
+                },
+                "MetaFilterDate": {
+                    "$ref": "#/definitions/mandDate",
+                    "description": "Database created timestamp of latest update of row.",
+                    "examples": [ "2019-09-06T15:03:45.378" ]
+                },
+                "WorkOrderNo": {
+                    "$ref": "#/definitions/mandOrderNo",
+                    "description": "Identifier of the WorkOrder (delivery). Will form a PK if combined with ORDER_NO. Will only be available in iSell for SalesOrders.",
+                    "examples": [ "12414600.GB" ]
+                },
+                "SrcWoKey": {
+                    "$ref": "#/definitions/mandSrcKey",
+                    "description": "Technical key of WorkOrder in source system (usually ISOM).",
+                    "examples": [ "20201224121314567890124.GB" ]
+                },
+                "PromisedDelivStart": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Promised start point in time for the delivery.",
+                    "examples": [ "2019-09-06T06:00:00" ]
+                },
+                "PromisedDelivEnd": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Promised end point in time for the delivery.",
+                    "examples": [ "2019-09-06T18:00:00" ]
+                },
+                "DeliveredDate": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date of actual delivery to the customer.",
+                    "examples": [ "2019-09-06T09:55:00" ]
+                },
+                "VatValue": {
+                    "$ref": "#/definitions/nullNumber",
+                    "description": "Sum of VatValue for all Order Lines in this Work Order.",
+                    "examples": [ 1.66 ]
+                },
+                "DeliveryValue": {
+                    "$ref": "#/definitions/nullNumber",
+                    "description": "Sum of DeliveryValue for all Order Lines in this Work Order.",
+                    "examples": [ 52.95 ]
+                },
+                "UnitMerge": {
+                    "$ref": "#/definitions/mandUnit",
+                    "description": "Merge node (LSC or STO) for the goods being sent to the customer. Only for Sales Orders.",
+                    "examples": [ "BU.LSC.1728" ]
+                },
+                "UnitProvider": {
+                    "$ref": "#/definitions/nullUnit",
+                    "description": "CAR id of provider (CAR.xxxxx).",
+                    "examples": [ "BU.CAR.12345" ]
+                },
+                "WoType": {
+                    "$ref": "#/definitions/nullString20",
+                    "enum": [ "DS", "PS" ],
+                    "description": "Work Order (Delivery) type. DS for Delivery Services, PS for Provided Services.",
+                    "examples": [ "DS", "PS" ]
+                },
+                "ProjStatusCode": {
+                    "$ref": "#/definitions/mandStatusCode",
+                    "description": "Projected (CompSO calculated) status code.",
+                    "examples": [ 1000, 8000 ]
+                },
+                "ProjStatusCodeOld": {
+                    "$ref": "#/definitions/mandStatusCode",
+                    "description": "Previous projected (SOIA calculated) status code, i.e. the ProjStatusCode from the previous message.",
+                    "examples": [ 0, 1000, 8000 ]
+                },
+                "ProjStatus": {
+                    "$ref": "#/definitions/mandString50",
+                    "description": "Projected (CompSO calculated) status, e.g. Dispatched, Delivered etc.",
+                    "examples": [ "Created", "Delivered", "Cancelled" ]
+                },
+                "StatusCode": {
+                    "$ref": "#/definitions/mandStatusCode",
+                    "description": "Assumed ISOM status code.",
+                    "examples": [ 1000, 8000 ]
+                },
+                "StatusCodeOld": {
+                    "$ref": "#/definitions/mandStatusCode",
+                    "description": "Assumed ISOM status code of previous message.",
+                    "examples": [ 0, 1000, 8000 ]
+                },
+                "Status": {
+                    "$ref": "#/definitions/mandString50",
+                    "description": "Assumed ISOM status, e.g. Dispatched, Delivered etc.",
+                    "examples": [ "Created", "Delivered", "Cancelled" ]
+                },
+                "OrderLines": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/OrderLine"
+                    }
+                }
+            },
+            "required": [
+                "MetaInsertDate",
+                "MetaFilterDate",
+                "WorkOrderNo",
+                "PromisedDelivStart",
+                "PromisedDelivEnd",
+                "DeliveredDate",
+                "VatValue",
+                "DeliveryValue",
+                "UnitMerge",
+                "ProjStatusCode",
+                "ProjStatusCodeOld",
+                "ProjStatus",
+                "StatusCode",
+                "StatusCodeOld",
+                "Status",
+                "OrderLines"
+            ]
+        },
+        "OrderLine": {
+            "type": "object",
+            "description": "An Order is built by 1 or more OrderLines having a specific ItemNo and a Quantity.",
+            "properties": {
+                "MetaInsertDate": {
+                    "$ref": "#/definitions/mandDate",
+                    "description": "Database created timestamp of insert of row.",
+                    "examples": [ "2019-09-01T20:50:54.405" ]
+                },
+                "MetaFilterDate": {
+                    "$ref": "#/definitions/mandDate",
+                    "description": "Database created timestamp of latest update of row.",
+                    "examples": [ "2019-09-06T15:03:45.378" ]
+                },
+                "CompLineNo": {
+                    "$ref": "#/definitions/mandLineNo",
+                    "description": "CompSO (Computed) order line number. Will form a PK if combined with OrderNo.",
+                    "examples": [ 1 ]
+                },
+                "OrderLineNo": {
+                    "$ref": "#/definitions/nullLineNo",
+                    "description": "Orderline number (from iSell for SalesOrder). May be used together with OrderNo to retreive info from iSell/ISOM.",
+                    "examples": [ 1 ]
+                },
+                "SrcOlKey": {
+                    "$ref": "#/definitions/mandSrcKey",
+                    "description": "Technical key of OrderLine in source system (usually ISOM).",
+                    "examples": [ "20201224121314567890124.GB" ]
+                },
+                "XrefSrcOlKey": {
+                    "$ref": "#/definitions/nullSrcKey",
+                    "description": "Technical cross reference key of OrderLine in source system (usually ISOM).",
+                    "examples": [ "20201224121314567890124.GB" ]
+                },
+                "XrefSrcOhKey": {
+                    "$ref": "#/definitions/nullSrcKey",
+                    "description": "Technical cross reference key of OrderHead in source system (usually ISOM).",
+                    "examples": [ "20201224121314567890123.GB" ]
+                },
+                "XrefOrderNo": {
+                    "$ref": "#/definitions/nullOrderNo",
+                    "description": "Points back to the original SalesOrder if this is an InternalReturn Order, or to the InternalReturn Order if this is the cancelled SalesOrder.",
+                    "examples": [ null, "1049860405.A01" ]
+                },
+                "XrefCompLineNo": {
+                    "$ref": "#/definitions/nullLineNo",
+                    "description": "The CompSO (Computed) order line number accompanying XrefOrderNo..",
+                    "examples": [ null, 1 ]
+                },
+                "XrefOrderLineNo": {
+                    "$ref": "#/definitions/nullLineNo",
+                    "description": "The (iSell) Order Line number accompanying XrefOrderNo.",
+                    "examples": [ null, 1 ]
+                },
+                "LineType": {
+                    "$ref": "#/definitions/mandString20",
+                    "enum": [ "PROD", "DS", "PS" ],
+                    "description": "OrderLine type. PROD for product lines. DS for Delivery Services, PS for Provided Services.",
+                    "examples": [ "PROD", "DS", "PS" ]
+                },
+                "DeliveredDate": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date when the Order Line was delivered to the customer.",
+                    "examples": [ "2019-09-06T09:55:00" ]
+                },
+                "InternalReturnDate": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date, when there was an InternalReturn created for (part of) this Order Line.",
+                    "examples": [ null, "2019-09-06T09:55:00" ]
+                },
+                "DeliveryMethod": {
+                    "$ref": "#/definitions/nullString40",
+                    "description": "Delivery method.",
+                    "examples": [ "SHP" ]
+                },
+                "DdcFlag": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9,
+                    "description": "Default 0, ==1 if DDC flow, ==2 if decentr, ==9 if unknown.",
+                    "examples": [ 0, 1, 9 ]
+                },
+                "DeliveryType": {
+                    "$ref": "#/definitions/nullItemID",
+                    "description": "IKEA ItemId for delivery type; e.g. SGR50000597 (Parcel), SGR40000606 (Truck).",
+                    "examples": [ "SGR50000597" ]
+                },
+                "ServiceProviderId": {
+                    "$ref": "#/definitions/nullString100",
+                    "description": "Centiro ID (GUID) of the Service Provider, if LineType is PS. IKEA CAR id from Centiro, prefixed with 'Centiro.' if LineType is DS.",
+                    "examples": [ null, "Centiro.50451", "5f63556b-7823-4e43-92ed-01d100cbb650" ]
+                },
+                "RetailPrice": {
+                    "$ref": "#/definitions/nullNumber",
+                    "description": "Price per unit including tax.",
+                    "examples": [ 6 ]
+                },
+                "VatValue": {
+                    "$ref": "#/definitions/nullNumber",
+                    "description": "Vat Charges. Only for lines where LineType is 'DS'.",
+                    "examples": [ null ]
+                },
+                "DeliveryValue": {
+                    "$ref": "#/definitions/nullNumber",
+                    "description": "Delivery Value. This is the FreightValue if LineType is 'DS'. If LineType is 'PROD' it is RetailPrice*ItemQtyAct.",
+                    "examples": [ 6 ]
+                },
+                "UnitFictional": {
+                    "$ref": "#/definitions/nullUnit",
+                    "description": "Fictional sending Unit (derived from  GA_SELL). Only for SalesOrders. May or may not be the actual CDC.",
+                    "examples": [ "BU.CDC.027" ]
+                },
+                "UnitShip": {
+                    "$ref": "#/definitions/nullUnit",
+                    "description": "Shipping unit for this this OrderLine. May be CDC, SUP or STO if a SalesOrder. This will be the Receiver (STO or CDC) if a ReturnOrder.",
+                    "examples": [ "BU.CDC.027" ]
+                },
+                "XrefUnitShip": {
+                    "$ref": "#/definitions/nullUnit",
+                    "description": "Cross reference value for UNIT_SHIP. For an Internal Return Order this will be UNIT_SHIP for the SalesOrder and vice versa.",
+                    "examples": [ null ]
+                },
+                "ItemId": {
+                    "$ref": "#/definitions/mandItemID",
+                    "description": "An item in IKEA is always formed by the ITEM_TYPE (3 characters) followed by the ITEM_NO (8..15 digits). CompSO is concatenating this.",
+                    "examples": [ "ART60217799" ]
+                },
+                "ItemQtyUom": {
+                    "$ref": "#/definitions/mandString20",
+                    "description": "Unit of Measure. PIECE, METER, ORDERS etc.",
+                    "examples": [ "PIECE", "METER", "ORDERS" ]
+                },
+                "ItemQtyOrig": {
+                    "$ref": "#/definitions/mandNumber",
+                    "description": "The quantity which was ordered at order creation. This is not modified after order confirmation.",
+                    "examples": [ 1 ]
+                },
+                "ItemQtyAct": {
+                    "$ref": "#/definitions/mandNumber",
+                    "description": "Active (Delivered, if that status is reached) quantity for the orderline (this includes deduction of posible cancellations etc).",
+                    "examples": [ 1 ]
+                },
+                "ItemQtyResvStock": {
+                    "$ref": "#/definitions/mandNumber",
+                    "description": "Quantity iSOM has reserved towards stock at hand.",
+                    "examples": [ 0 ]
+                },
+                "ItemQtyResvGit": {
+                    "$ref": "#/definitions/mandNumber",
+                    "description": "Quantity iSOM has reserved towards Goods-in-Transit.",
+                    "examples": [ 0 ]
+                },
+                "ItemQtyResvBackord": {
+                    "$ref": "#/definitions/mandNumber",
+                    "description": "Backordered quantity in iSOM.",
+                    "examples": [ 0 ]
+                },
+                "ItemQtyDamaged": {
+                    "$ref": "#/definitions/nullNumber",
+                    "description": "If a (precise) damaged quantity could be discerned (mostly for Internal Return orders).",
+                    "examples": [ 0 ]
+                },
+                "ItemQtyMissing": {
+                    "$ref": "#/definitions/nullNumber",
+                    "description": "If a (precise) missing quantity could be discerned (mostly for Internal Return orders).",
+                    "examples": [ 0 ]
+                },
+                "BackorderedDate": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date, when the quantity was backordered (the first time).",
+                    "examples": [ "2019-09-05T00:43:55" ]
+                },
+                "AllocatedDate": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date, when the quantity was allocated (the first time).",
+                    "examples": [ "2019-09-05T00:43:55" ]
+                },
+                "ReleasedDate": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": " Date, when the quantity was released for fulfilment (the first time).",
+                    "examples": [ "2019-09-05T00:43:55" ]
+                },
+                "PickedDate": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date, when the quantity was picked (the first time).",
+                    "examples": [ "2019-09-05T00:43:55" ]
+                },
+                "ShipDate": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date, when the OrderLine is expected to be shipped,",
+                    "examples": [ "2019-09-05T00:43:55" ]
+                },
+                "SywVersion": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Number of weeks this OrderLine sales quantity has been updated.",
+                    "examples": [ 1 ]
+                },
+                "SywLatest": {
+                    "type": "string",
+                    "description": "Sales Year Week of the latest update of the OrderLine quantity (ItemQtyAct).  Note that a SYW starts on a Sunday.",
+                    "examples": [ "201936" ]
+                },
+                "SywLatestQty": {
+                    "type": "number",
+                    "description": "Quantity (ItemQtyAct) from the latest Sales Year Week update of the Order Line.",
+                    "examples": [ 1 ]
+                },
+                "SywLatestQtyDelta": {
+                    "type": "number",
+                    "description": "Delta quantity (latest:ItemQtyAct - previous:ItemQtyAct) compared to the previous Sales Year Week.",
+                    "examples": [ 0 ]
+                },
+                "SywPrevious": {
+                    "type": "string",
+                    "description": "Sales Year Week of the previous update of the OrderLine (Note that a SYW starts on a Sunday).",
+                    "examples": [ "201936" ]
+                },
+                "SywPreviousQty": {
+                    "type": "number",
+                    "description": "Quantity (ItemQtyAct) of the previous Sales Year Week.",
+                    "examples": [ 1 ]
+                },
+                "SywPreviousQtyDelta": {
+                    "type": "number",
+                    "description": "Delta quantity (prev:ItemQtyAct - old:ItemQtyAct) compared to the  Sales Year Week before the previous SYW.",
+                    "examples": [ 0 ]
+                },
+                "ProjStatusCode": {
+                    "$ref": "#/definitions/mandStatusCode",
+                    "description": "Projected (CompSO calculated) status code.",
+                    "examples": [ 1000, 8000 ]
+                },
+                "ProjStatusCodeOld": {
+                    "$ref": "#/definitions/mandStatusCode",
+                    "description": "Previous projected (SOIA calculated) status code, i.e. the ProjStatusCode from the previous message.",
+                    "examples": [ 0, 1000, 8000 ]
+                },
+                "ProjStatus": {
+                    "$ref": "#/definitions/mandString50",
+                    "description": "Projected (CompSO calculated) status, e.g. Dispatched, Delivered etc.",
+                    "examples": [ "Created", "Delivered", "Cancelled" ]
+                },
+                "StatusCode": {
+                    "$ref": "#/definitions/mandStatusCode",
+                    "description": "Assumed ISOM status code.",
+                    "examples": [ 1000, 8000 ]
+                },
+                "StatusCodeOld": {
+                    "$ref": "#/definitions/mandStatusCode",
+                    "description": "Assumed ISOM status code of previous message.",
+                    "examples": [ 0, 1000, 8000 ]
+                },
+                "Status": {
+                    "$ref": "#/definitions/mandString50",
+                    "description": "Assumed ISOM status, e.g. Dispatched, Delivered etc.",
+                    "examples": [ "Created", "Delivered", "Cancelled" ]
+                },
+                "OrderLineDetails": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/OrderLineDetail"
+                    }
+                }
+            },
+            "required": [
+                "MetaInsertDate",
+                "MetaFilterDate",
+                "CompLineNo",
+                "OrderLineNo",
+                "XrefOrderNo",
+                "XrefCompLineNo",
+                "XrefOrderLineNo",
+                "LineType",
+                "DeliveredDate",
+                "InternalReturnDate",
+                "DeliveryMethod",
+                "DdcFlag",
+                "DeliveryType",
+                "ServiceProviderId",
+                "RetailPrice",
+                "VatValue",
+                "DeliveryValue",
+                "UnitFictional",
+                "UnitShip",
+                "XrefUnitShip",
+                "ItemId",
+                "ItemQtyUom",
+                "ItemQtyOrig",
+                "ItemQtyAct",
+                "ItemQtyResvStock",
+                "ItemQtyResvGit",
+                "ItemQtyResvBackord",
+                "SywVersion",
+                "SywLatest",
+                "SywLatestQty",
+                "SywLatestQtyDelta",
+                "SywPrevious",
+                "SywPreviousQty",
+                "SywPreviousQtyDelta",
+                "ProjStatusCode",
+                "ProjStatusCodeOld",
+                "ProjStatus",
+                "StatusCode",
+                "StatusCodeOld",
+                "Status",
+                "OrderLineDetails"
+            ]
+        },
+        "OrderLineDetail": {
+            "type": "object",
+            "description": "When an OrderLine is transported, there is 1 or more OrderLineDetails.",
+            "properties": {
+                "MetaInsertDate": {
+                    "$ref": "#/definitions/mandDate",
+                    "description": "Database created timestamp of insert of row.",
+                    "examples": [ "2019-09-01T20:50:54.405" ]
+                },
+                "MetaFilterDate": {
+                    "$ref": "#/definitions/mandDate",
+                    "description": "Database created timestamp of latest update of row.",
+                    "examples": [ "2019-09-06T15:03:45.378" ]
+                },
+                "DetailLineNo": {
+                    "$ref": "#/definitions/mandLineNo",
+                    "description": "ID for the Order Line detail. Unique within the Order Line (always starting with 1..). PK if combined with OrderNo and CompLineNo.",
+                    "examples": [ 1 ]
+                },
+                "DetailType": {
+                    "$ref": "#/definitions/mandString24",
+                    "description": "Type of OrderLineDetail. May be 'Unknown', 'Consignment', 'CDU' or 'Combined' if there is both Consignment and CDU information.",
+                    "examples": [ "Combined", "Consignment", "CDU" ]
+                },
+                "CduId": {
+                    "$ref": "#/definitions/nullString50",
+                    "description": "CDU_ID from Centiro/Astro.",
+                    "examples": [ "2701175857" ]
+                },
+                "CduCsmState": {
+                    "oneOf": [{"type": "string", "maxLength": 1, "enum": [ "D", "H", "C" ]}, {"type":"null"} ],
+                    "description": "State of how the CduId is matched with CsmId. U=Unknown, H=Heuristic or D=Determined, C=CDU only",
+                    "examples": [ "D", "H", "C" ]
+                },
+                "CsmlId": {
+                    "oneOf": [{"type": "string", "maxLength": 30, "pattern": "^[A-Z]{2,3}\\.[0-9A-Z]{3,5}\\.[0-9A-Z]{1,12}\\.[0-9]{1,5}$"}, {"type":"null"} ],
+                    "description": "The (unique) Consignment Line Identifier (BU_TYPE_CRE.BU_CODE_CRE.CSM_NO.CSML_NO) generated in warehouse or supplier system.",
+                    "examples": [ "CDC.027.000070018067.1040" ]
+                },
+                "UnitCnor": {
+                    "$ref": "#/definitions/nullUnit",
+                    "description": "Consignor (Unit creating the Consignment information), from BU_TYPE_CNOR and BU_CODE_CNOR (see CSML_ID).",
+                    "examples": [ "BU.CDC.027" ]
+                },
+                "UnitDsp": {
+                    "$ref": "#/definitions/nullUnit",
+                    "description": "Dispatching unit (from where the goods is actually shipped).",
+                    "examples": [ "BU.CDC.027" ]
+                },
+                "UnitCnee": {
+                    "$ref": "#/definitions/nullUnit",
+                    "description": "Consignee. Where the goods is received (InternalReturn Order) or merged to form the delivery to the customer.",
+                    "examples": [ "BU.LSC.1728" ]
+                },
+                "UnitSup": {
+                    "$ref": "#/definitions/nullUnit",
+                    "description": "Supplier, the actual originator, of the goods. Not available when store fulfillment. Not guaranteed for InternalReturn Orders.",
+                    "examples": [ "BU.SUP.19240" ]
+                },
+                "XrefCsmlId": {
+                    "oneOf": [{"type": "string", "maxLength": 30, "pattern": "^[A-Z]{2,3}\\.[0-9A-Z]{3,5}\\.[0-9A-Z]{1,12}\\.[0-9]{1,5}$"}, {"type":"null"} ],
+                    "description": "The Consignment Line ID (ref CsmlId) cross reference to the original Consignment line (only for InternalReturn Orders).",
+                    "examples": [ null ]
+                },
+                "XrefCduId": {
+                    "$ref": "#/definitions/nullString50",
+                    "description": "The CDU ID cross reference to the original CDU (only for InternalReturn Orders).",
+                    "examples": [ null ]
+                },
+                "ItemQty": {
+                    "$ref": "#/definitions/nullNumber",
+                    "description": "The quantity for this particular OrderLineDetail. The sum of OrderLineDetails ItemQty should match the ItemQtyAct on OrderLine level",
+                    "examples": [ 1 ]
+                },
+                "LoadedAtCuDate": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date, when the quantity was loaded at Central Unit.",
+                    "examples": [ "2019-09-06T07:59:16" ]
+                },
+                "DispatchedDate": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date, when the quantity actually has been dispatched. Might be derived. This timestamp may change if the first value was derived.",
+                    "examples": [ "2019-09-05T00:43:55" ]
+                },
+                "DispatchedDate1": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date, when the quantity actually has been dispatched (the first found time stamp).",
+                    "examples": [ "2019-09-05T00:43:55" ]
+                },
+                "ReceivedAtHubDate": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date, when the quantity was received at hub. Might be derived. This timestamp may change over time.",
+                    "examples": [ "2019-09-06T07:09:00" ]
+                },
+                "ReceivedAtHubDate1": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date, when the quantity was received at hub the first time.",
+                    "examples": [ "2019-09-06T07:09:00" ]
+                },
+                "LoadedOnTruckDate": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date, when the quantity was loaded at truck. Might be derived. This timestamp may change over time.",
+                    "examples": [ "2019-09-06T08:09:00" ]
+                },
+                "LoadedOnTruckDate1": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date, when the quantity was loaded at truck the first time.",
+                    "examples": [ "2019-09-06T08:09:00" ]
+                },
+                "AvailableForPupDate": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date, when the quantity was avalilable for Pick Up. Might be derived.",
+                    "examples": [ null ]
+                },
+                "AvailableForPupDate1": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date, when the quantity was avalaible for Pick Up the first time.",
+                    "examples": [ null ]
+                },
+                "DeliveredDate": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date, when the quantity was delivered.",
+                    "examples": [ "2019-09-06T09:55:00" ]
+                },
+                "MissingDate": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date, when the quantity was found to be missing.",
+                    "examples": [ null ]
+                },
+                "DamagedDate": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date, when the quantity was found to be damaged",
+                    "examples": [ null ]
+                },
+                "DeliveryFailureDate": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date of the latest delivery failure.",
+                    "examples": [ null ]
+                },
+                "DeliveryRefusedDate": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date of the latest delivery refusal.",
+                    "examples": [ null ]
+                },
+                "InternalReturnDate": {
+                    "$ref": "#/definitions/nullDate",
+                    "description": "Date, when the quantity was deemed for an internal return.",
+                    "examples": [ null ]
+                },
+                "ProjStatusCode": {
+                    "$ref": "#/definitions/mandStatusCode",
+                    "description": "Projected (CompSO calculated) status code.",
+                    "examples": [ 1000, 8000 ]
+                },
+                "ProjStatusCodeOld": {
+                    "$ref": "#/definitions/mandStatusCode",
+                    "description": "Previous projected (SOIA calculated) status code, i.e. the ProjStatusCode from the previous message.",
+                    "examples": [ 0, 1000, 8000 ]
+                },
+                "ProjStatus": {
+                    "$ref": "#/definitions/mandString50",
+                    "description": "Projected (CompSO calculated) status, e.g. Dispatched, Delivered etc.",
+                    "examples": [ "Created", "Delivered", "Cancelled" ]
+                },
+                "StatusCode": {
+                    "$ref": "#/definitions/mandStatusCode",
+                    "description": "Assumed ISOM status code.",
+                    "examples": [ 1000, 8000 ]
+                },
+                "StatusCodeOld": {
+                    "$ref": "#/definitions/mandStatusCode",
+                    "description": "Assumed ISOM status code of previous message.",
+                    "examples": [ 0, 1000, 8000 ]
+                },
+                "Status": {
+                    "$ref": "#/definitions/mandString50",
+                    "description": "Assumed ISOM status, e.g. Dispatched, Delivered etc.",
+                    "examples": [ "Created", "Delivered", "Cancelled" ]
+                }
+            },
+            "required": [
+                "MetaInsertDate",
+                "MetaFilterDate",
+                "DetailLineNo",
+                "DetailType",
+                "CduId",
+                "CduCsmState",
+                "CsmlId",
+                "UnitCnor",
+                "UnitDsp",
+                "UnitCnee",
+                "UnitSup",
+                "XrefCsmlId",
+                "XrefCduId",
+                "ItemQty",
+                "LoadedAtCuDate",
+                "DispatchedDate",
+                "ReceivedAtHubDate",
+                "ReceivedAtHubDate1",
+                "LoadedOnTruckDate",
+                "LoadedOnTruckDate1",
+                "AvailableForPupDate",
+                "AvailableForPupDate1",
+                "DeliveredDate",
+                "MissingDate",
+                "DamagedDate",
+                "DeliveryFailureDate",
+                "DeliveryRefusedDate",
+                "InternalReturnDate",
+                "ProjStatusCode",
+                "ProjStatusCodeOld",
+                "ProjStatus",
+                "StatusCode",
+                "StatusCodeOld",
+                "Status"
+            ]
+        }
+    },
+    "type": "object",
+    "title": "CompositeSalesOrder",
+    "description": "This is the JSON schema for the CompSO (Composite SalesOrder) produced by SOIA.",
+    "examples": [
+        { "MetaInsertDate": "2020-01-15T08:13:03.863", "MetaFilterDate": "2020-01-27T21:52:58.562", "Event": "Delivered", "MsgSource": "ISOM", "OrderType": "0001", "OrderSubType": "ShowRoom Store=STO.101 ZipStore=STO.101", "OrderNo": "1068764333.A01", "ZipCode": "6916", "EntryType": "STORE", "CreateDate": "2020-01-15T08:13:02", "DeliveredDate": "2020-01-17T09:37:18", "GaSell": "CTY.CH", "UnitSell": "BU.STO.101", "OriginalTotalAmount": 157.45, "CurrencyCode": "CHF", "VatValue": 0, "DeliveryValue": 0, "ServiceType": "HOME_DELIVERY", "PaymentMethod": "CASH", "PaymentStatus": "PAID", "ProjStatusCode": 8000, "ProjStatusCodeOld": 0, "ProjStatus": "Delivered", "StatusCode": 8000, "StatusCodeOld": 0, "Status": "Delivered",
+            "WorkOrders": [
+                { "MetaInsertDate": "2020-01-27T21:52:58.563", "MetaFilterDate": "2020-01-27T21:52:58.563", "WorkOrderNo": "18533212.CH", "PromisedDelivStart": "2020-01-17T07:00:00", "PromisedDelivEnd": "2020-01-17T17:00:00", "DeliveredDate": "2020-01-17T09:37:18", "VatValue": 0, "DeliveryValue": 0, "UnitMerge": "BU.LSC.1500", "ProjStatusCode": 8000, "ProjStatusCodeOld": 0, "ProjStatus": "Delivered", "StatusCode": 8000, "StatusCodeOld": 0, "Status": "Delivered",
+                "OrderLines": [
+                    { "MetaInsertDate": "2020-01-15T08:13:03.863", "MetaFilterDate": "2020-01-27T21:52:58.565", "CompLineNo": 1, "OrderLineNo": 4, "XrefOrderNo": null, "XrefCompLineNo": null, "XrefOrderLineNo": null, "LineType": "PROD", "DeliveredDate": "2020-01-17T09:37:18", "InternalReturnDate": null, "DeliveryMethod": "SHP", "DdcFlag": 0, "DeliveryType": "SGR50000597", "ServiceProviderId": null, "RetailPrice": 0, "VatValue": null, "DeliveryValue": 0, "UnitFictional": "BU.CDC.020", "UnitShip": "BU.CDC.020", "XrefUnitShip": null, "ItemId": "ART60384203", "ItemQtyUom": "PIECE", "ItemQtyOrig": 50, "ItemQtyAct": 50, "ItemQtyResvStock": 0, "ItemQtyResvGit": 0, "ItemQtyResvBackord": 0, "SywVersion": 1, "SywLatest": "202003", "SywLatestQty": 50, "SywLatestQtyDelta": 0, "SywPrevious": "202003", "SywPreviousQty": 50, "SywPreviousQtyDelta": 0, "ProjStatusCode": 8000, "ProjStatusCodeOld": 0, "ProjStatus": "Delivered", "StatusCode": 8000, "StatusCodeOld": 0, "Status": "Delivered",
+                    "OrderLineDetails": [
+                        { "MetaInsertDate": "2020-01-16T11:02:38.203", "MetaFilterDate": "2020-01-27T21:52:58.560", "DetailLineNo": 1, "DetailType": "Combined", "CduId": "06086074954307", "CduCsmState": "D", "CsmlId": "CDC.020.000000018410.983", "UnitCnor": "BU.CDC.020", "UnitDsp": "BU.CDC.020", "UnitCnee": "BU.LSC.1500", "UnitSup": "BU.SUP.22190", "XrefCsmlId": null, "XrefCduId": null, "ItemQty": 50, "LoadedAtCuDate": "2020-01-16T11:12:58", "DispatchedDate": "2020-01-16T12:00:33", "ReceivedAtHubDate": "2020-01-16T14:50:11", "ReceivedAtHubDate1": "2020-01-16T14:50:11", "LoadedOnTruckDate": null, "LoadedOnTruckDate1": null, "AvailableForPupDate": null, "AvailableForPupDate1": null, "DeliveredDate": "2020-01-17T09:37:18", "MissingDate": null, "DamagedDate": null, "DeliveryFailureDate": null, "DeliveryRefusedDate": null, "InternalReturnDate": null, "ProjStatusCode": 8000, "ProjStatusCodeOld": 0, "ProjStatus": "Delivered", "StatusCode": 8000, "StatusCodeOld": 0, "Status": "Delivered" }
+                    ]},
+                    { "MetaInsertDate": "2020-01-27T21:52:58.565", "MetaFilterDate": "2020-01-27T21:52:58.565", "CompLineNo": 2, "OrderLineNo": 7, "XrefOrderNo": null, "XrefCompLineNo": null, "XrefOrderLineNo": null, "LineType": "DS", "DeliveredDate": "2020-01-17T09:37:18", "InternalReturnDate": null, "DeliveryMethod": null, "DdcFlag": 0, "DeliveryType": "SGR50000597", "ServiceProviderId": null, "RetailPrice": 0, "VatValue": 0, "DeliveryValue": 0, "UnitFictional": "BU.LSC.1500", "UnitShip": "BU.LSC.1500", "XrefUnitShip": null, "ItemId": "SGR50000597", "ItemQtyUom": "ORDERS", "ItemQtyOrig": 1, "ItemQtyAct": 1, "ItemQtyResvStock": 0, "ItemQtyResvGit": 0, "ItemQtyResvBackord": 0, "SywVersion": 1, "SywLatest": "202005", "SywLatestQty": 1, "SywLatestQtyDelta": 0, "SywPrevious": "202005", "SywPreviousQty": 1, "SywPreviousQtyDelta": 0, "ProjStatusCode": 8000, "ProjStatusCodeOld": 0, "ProjStatus": "Delivered", "StatusCode": 8000, "StatusCodeOld": 0, "Status": "Delivered", "OrderLineDetails": [] }
+                ]}
+            ], "OrderLines": []
+        },
+        { "MetaInsertDate": "2019-09-01T20:50:54.405", "MetaFilterDate": "2019-09-06T15:03:45.378", "Event": "DataChange", "MsgSource": "ISOM", "OrderType": "0001", "OrderSubType": null, "OrderNo": "1049860405.A01", "ZipCode": "E14 9JU", "EntryType": "INTERNET", "CreateDate": "2019-09-01T20:50:52", "DeliveredDate": "2019-09-06T09:55:00", "GaSell": "CTY.GB", "UnitSell": "BU.STO.472", "OriginalTotalAmount": 52.95, "CurrencyCode": "GBP", "VatValue": 1.66, "DeliveryValue": 52.95, "ServiceType": "HOME_DELIVERY", "PaymentMethod": "CASH", "PaymentStatus": "PAID", "ProjStatusCode": 8000, "ProjStatusCodeOld": 0, "ProjStatus": "Delivered", "StatusCode": 8000, "StatusCodeOld": 0, "Status": "Delivered",
+            "WorkOrders": [
+                { "MetaInsertDate": "2019-09-06T15:03:37.465", "MetaFilterDate": "2019-09-06T15:03:37.465", "WorkOrderNo": "12414600.GB", "PromisedDelivStart": "2019-09-06T06:00:00", "PromisedDelivEnd": "2019-09-06T18:00:00", "DeliveredDate": "2019-09-06T09:55:00", "VatValue": 1.66, "DeliveryValue": 52.95, "UnitMerge": "BU.LSC.1728", "ProjStatusCode": 8000, "ProjStatusCodeOld": 0, "ProjStatus": "Delivered", "StatusCode": 8000, "StatusCodeOld": 0, "Status": "Delivered",
+                "OrderLines": [
+                    { "MetaInsertDate": "2019-09-01T20:50:54.405", "MetaFilterDate": "2019-09-06T15:03:37.466", "CompLineNo": 1, "OrderLineNo": 1, "XrefOrderNo": null, "XrefCompLineNo": null, "XrefOrderLineNo": null, "LineType": "PROD", "DeliveredDate": "2019-09-06T09:55:00", "InternalReturnDate": null, "DeliveryMethod": "SHP", "DdcFlag": 0, "DeliveryType": "SGR50000597", "ServiceProviderId": null, "RetailPrice": 6, "VatValue": null, "DeliveryValue": 6, "UnitFictional": "BU.CDC.027", "UnitShip": "BU.CDC.027", "XrefUnitShip": null, "ItemId": "ART60217799", "ItemQtyUom": "PIECE", "ItemQtyOrig": 1, "ItemQtyAct": 1, "ItemQtyResvStock": 0, "ItemQtyResvGit": 0, "ItemQtyResvBackord": 0, "SywVersion": 1, "SywLatest": "201936", "SywLatestQty": 1, "SywLatestQtyDelta": 0, "SywPrevious": "201936", "SywPreviousQty": 1, "SywPreviousQtyDelta": 0, "ProjStatusCode": 8000, "ProjStatusCodeOld": 0, "ProjStatus": "Delivered", "StatusCode": 8000, "StatusCodeOld": 0, "Status": "Delivered",
+                    "OrderLineDetails": [
+                        { "MetaInsertDate": "2019-09-04T23:45:21.717", "MetaFilterDate": "2019-09-06T11:06:38.260", "DetailLineNo": 1, "DetailType": "Combined", "CduId": "2701175857", "CduCsmState": "D", "CsmlId": "CDC.027.000070018067.1040", "UnitCnor": "BU.CDC.027", "UnitDsp": "BU.CDC.027", "UnitCnee": "BU.LSC.1728", "UnitSup": "BU.SUP.19240", "XrefCsmlId": null, "XrefCduId": null, "ItemQty": 1, "LoadedAtCuDate": "2019-09-06T07:59:16", "DispatchedDate": "2019-09-05T00:43:55", "ReceivedAtHubDate": "2019-09-06T07:09:00", "ReceivedAtHubDate1": "2019-09-06T07:09:00", "LoadedOnTruckDate": "2019-09-06T08:09:00", "LoadedOnTruckDate1": "2019-09-06T08:09:00", "AvailableForPupDate": null, "AvailableForPupDate1": null, "DeliveredDate": "2019-09-06T09:55:00", "MissingDate": null, "DamagedDate": null, "DeliveryFailureDate": null, "DeliveryRefusedDate": null, "InternalReturnDate": null, "ProjStatusCode": 8000, "ProjStatusCodeOld": 0, "ProjStatus": "Delivered", "StatusCode": 8000, "StatusCodeOld": 0, "Status": "Delivered" }
+                    ]},
+                    { "MetaInsertDate": "2019-09-01T20:50:54.405", "MetaFilterDate": "2019-09-06T15:03:45.379", "CompLineNo": 2, "OrderLineNo": 3, "XrefOrderNo": "Y100180899.GB", "XrefCompLineNo": 1, "XrefOrderLineNo": null, "LineType": "PROD", "DeliveredDate": null, "InternalReturnDate": "2019-09-06T15:03:37", "DeliveryMethod": "SHP", "DdcFlag": 0, "DeliveryType": "SGR50000597", "ServiceProviderId": null, "RetailPrice": 15, "VatValue": null, "DeliveryValue": 15, "UnitFictional": "BU.CDC.027", "UnitShip": "BU.CDC.027", "XrefUnitShip": "BU.STO.185", "ItemId": "ART50280098", "ItemQtyUom": "PIECE", "ItemQtyOrig": 1, "ItemQtyAct": 0, "ItemQtyResvStock": 0, "ItemQtyResvGit": 0, "ItemQtyResvBackord": 0, "SywVersion": 1, "SywLatest": "201936", "SywLatestQty": 0, "SywLatestQtyDelta": 0, "SywPrevious": "201936", "SywPreviousQty": 0, "SywPreviousQtyDelta": 0, "ProjStatusCode": 9020, "ProjStatusCodeOld": 0, "ProjStatus": "InternalReturn", "StatusCode": 9020, "StatusCodeOld": 0, "Status": "InternalReturn",
+                    "OrderLineDetails": [
+                        { "MetaInsertDate": "2019-09-04T23:45:21.046", "MetaFilterDate": "2019-09-04T23:45:21.046", "DetailLineNo": 1, "DetailType": "Combined", "CduId": "2701175847", "CduCsmState": "D", "CsmlId": "CDC.027.000070018067.1039", "UnitCnor": "BU.CDC.027", "UnitDsp": "BU.CDC.027", "UnitCnee": "BU.LSC.1728", "UnitSup": "BU.SUP.20564", "XrefCsmlId": null, "XrefCduId": null, "ItemQty": 1, "LoadedAtCuDate": "2019-09-04T23:45:20", "DispatchedDate": "2019-09-05T00:43:55", "ReceivedAtHubDate": "2019-09-06T08:46:19", "ReceivedAtHubDate1": null, "LoadedOnTruckDate": null, "LoadedOnTruckDate1": null, "AvailableForPupDate": null, "AvailableForPupDate1": null, "DeliveredDate": null, "MissingDate": null, "DamagedDate": null, "DeliveryFailureDate": null, "DeliveryRefusedDate": null, "InternalReturnDate": "2019-09-06T15:03:37", "ProjStatusCode": 9020, "ProjStatusCodeOld": 0, "ProjStatus": "InternalReturn", "StatusCode": 9020, "StatusCodeOld": 0, "Status": "InternalReturn" }
+                    ]},
+                    { "MetaInsertDate": "2019-09-01T20:50:54.405", "MetaFilterDate": "2019-09-06T15:03:37.466", "CompLineNo": 3, "OrderLineNo": 4, "XrefOrderNo": null, "XrefCompLineNo": null, "XrefOrderLineNo": null, "LineType": "PROD", "DeliveredDate": "2019-09-06T09:55:00", "InternalReturnDate": null, "DeliveryMethod": "SHP", "DdcFlag": 0, "DeliveryType": "SGR50000597", "ServiceProviderId": null, "RetailPrice": 20, "VatValue": null, "DeliveryValue": 20, "UnitFictional": "BU.CDC.027", "UnitShip": "BU.CDC.027", "XrefUnitShip": null, "ItemId": "ART50280102", "ItemQtyUom": "PIECE", "ItemQtyOrig": 1, "ItemQtyAct": 1, "ItemQtyResvStock": 0, "ItemQtyResvGit": 0, "ItemQtyResvBackord": 0, "SywVersion": 1, "SywLatest": "201936", "SywLatestQty": 1, "SywLatestQtyDelta": 0, "SywPrevious": "201936", "SywPreviousQty": 1, "SywPreviousQtyDelta": 0, "ProjStatusCode": 8000, "ProjStatusCodeOld": 0, "ProjStatus": "Delivered", "StatusCode": 8000, "StatusCodeOld": 0, "Status": "Delivered",
+                    "OrderLineDetails": [
+                        { "MetaInsertDate": "2019-09-04T23:45:21.717", "MetaFilterDate": "2019-09-06T11:06:38.260", "DetailLineNo": 1, "DetailType": "Combined", "CduId": "2701175857", "CduCsmState": "D", "CsmlId": "CDC.027.000070018067.1042", "UnitCnor": "BU.CDC.027", "UnitDsp": "BU.CDC.027", "UnitCnee": "BU.LSC.1728", "UnitSup": "BU.SUP.21692", "XrefCsmlId": null, "XrefCduId": null, "ItemQty": 1, "LoadedAtCuDate": "2019-09-06T07:59:16", "DispatchedDate": "2019-09-05T00:43:55", "ReceivedAtHubDate": "2019-09-06T07:09:00", "ReceivedAtHubDate1": "2019-09-06T07:09:00", "LoadedOnTruckDate": "2019-09-06T08:09:00", "LoadedOnTruckDate1": "2019-09-06T08:09:00", "AvailableForPupDate": null, "AvailableForPupDate1": null, "DeliveredDate": "2019-09-06T09:55:00", "MissingDate": null, "DamagedDate": null, "DeliveryFailureDate": null, "DeliveryRefusedDate": null, "InternalReturnDate": null, "ProjStatusCode": 8000, "ProjStatusCodeOld": 0, "ProjStatus": "Delivered", "StatusCode": 8000, "StatusCodeOld": 0, "Status": "Delivered" }
+                    ]},
+                    { "MetaInsertDate": "2019-09-01T20:50:54.405", "MetaFilterDate": "2019-09-06T15:03:37.466", "CompLineNo": 4, "OrderLineNo": 5, "XrefOrderNo": null, "XrefCompLineNo": null, "XrefOrderLineNo": null, "LineType": "PROD", "DeliveredDate": "2019-09-06T09:55:00", "InternalReturnDate": null, "DeliveryMethod": "SHP", "DdcFlag": 0, "DeliveryType": "SGR50000597", "ServiceProviderId": null, "RetailPrice": 2, "VatValue": null, "DeliveryValue": 2, "UnitFictional": "BU.CDC.027", "UnitShip": "BU.CDC.027", "XrefUnitShip": null, "ItemId": "ART76113785", "ItemQtyUom": "PIECE", "ItemQtyOrig": 1, "ItemQtyAct": 1, "ItemQtyResvStock": 0, "ItemQtyResvGit": 0, "ItemQtyResvBackord": 0, "SywVersion": 1, "SywLatest": "201936", "SywLatestQty": 1, "SywLatestQtyDelta": 0, "SywPrevious": "201936", "SywPreviousQty": 1, "SywPreviousQtyDelta": 0, "ProjStatusCode": 8000, "ProjStatusCodeOld": 0, "ProjStatus": "Delivered", "StatusCode": 8000, "StatusCodeOld": 0, "Status": "Delivered",
+                    "OrderLineDetails": [
+                        { "MetaInsertDate": "2019-09-04T23:45:21.717", "MetaFilterDate": "2019-09-06T11:06:38.260", "DetailLineNo": 1, "DetailType": "Combined", "CduId": "2701175857", "CduCsmState": "D", "CsmlId": "CDC.027.000070018067.1041", "UnitCnor": "BU.CDC.027", "UnitDsp": "BU.CDC.027", "UnitCnee": "BU.LSC.1728", "UnitSup": "BU.SUP.20615", "XrefCsmlId": null, "XrefCduId": null, "ItemQty": 1, "LoadedAtCuDate": "2019-09-06T07:59:16", "DispatchedDate": "2019-09-05T00:43:55", "ReceivedAtHubDate": "2019-09-06T07:09:00", "ReceivedAtHubDate1": "2019-09-06T07:09:00", "LoadedOnTruckDate": "2019-09-06T08:09:00", "LoadedOnTruckDate1": "2019-09-06T08:09:00", "AvailableForPupDate": null, "AvailableForPupDate1": null, "DeliveredDate": "2019-09-06T09:55:00", "MissingDate": null, "DamagedDate": null, "DeliveryFailureDate": null, "DeliveryRefusedDate": null, "InternalReturnDate": null, "ProjStatusCode": 8000, "ProjStatusCodeOld": 0, "ProjStatus": "Delivered", "StatusCode": 8000, "StatusCodeOld": 0, "Status": "Delivered" }
+                    ]},
+                    { "MetaInsertDate": "2019-09-06T15:03:37.467", "MetaFilterDate": "2019-09-06T15:03:37.467", "CompLineNo": 5, "OrderLineNo": 6, "XrefOrderNo": null, "XrefCompLineNo": null, "XrefOrderLineNo": null, "LineType": "DS", "DeliveredDate": "2019-09-06T09:55:00", "InternalReturnDate": null, "DeliveryMethod": null, "DdcFlag": 0, "DeliveryType": "SGR50000597", "ServiceProviderId": null, "RetailPrice": 9.95, "VatValue": 1.66, "DeliveryValue": 9.95, "UnitFictional": "BU.LSC.1728", "UnitShip": "BU.LSC.1728", "XrefUnitShip": null, "ItemId": "SGR50000597", "ItemQtyUom": "ORDERS", "ItemQtyOrig": 1, "ItemQtyAct": 1, "ItemQtyResvStock": 0, "ItemQtyResvGit": 0, "ItemQtyResvBackord": 0, "SywVersion": 1, "SywLatest": "201936", "SywLatestQty": 1, "SywLatestQtyDelta": 0, "SywPrevious": "201936", "SywPreviousQty": 1, "SywPreviousQtyDelta": 0, "ProjStatusCode": 8000, "ProjStatusCodeOld": 0, "ProjStatus": "Delivered", "StatusCode": 8000, "StatusCodeOld": 0, "Status": "Delivered", "OrderLineDetails": [] }
+                ]}
+            ], "OrderLines": []
+        },
+        { "MetaInsertDate": "2019-09-06T15:03:37.461", "MetaFilterDate": "2019-09-06T15:03:37.461", "Event": "Created", "MsgSource": "ISOM", "OrderType": "0003", "OrderSubType": null, "OrderNo": "Y100180899.GB", "ZipCode": "E14 9JU", "EntryType": null, "CreateDate": "2019-09-06T15:03:37", "DeliveredDate": null, "GaSell": "CTY.GB", "UnitSell": "BU.STO.472", "OriginalTotalAmount": null, "CurrencyCode": null, "VatValue": 0, "DeliveryValue": 0, "ServiceType": null, "PaymentMethod": null, "PaymentStatus": null, "ProjStatusCode": 1000, "ProjStatusCodeOld": 0, "ProjStatus": "Created", "StatusCode": 1000, "StatusCodeOld": 0, "Status": "Created",
+            "WorkOrders": [] ,
+            "OrderLines": [
+                    { "MetaInsertDate": "2019-09-06T15:03:37.462", "MetaFilterDate": "2019-09-06T15:03:37.462", "CompLineNo": 1, "OrderLineNo": 0, "XrefOrderNo": "1049860405.A01", "XrefCompLineNo": 2, "XrefOrderLineNo": 3, "LineType": "PROD", "DeliveredDate": null, "InternalReturnDate": null, "DeliveryMethod": null, "DdcFlag": 0, "DeliveryType": null, "ServiceProviderId": null, "RetailPrice": 15, "VatValue": null, "DeliveryValue": null, "UnitFictional": "BU.STO.185", "UnitShip": "BU.STO.185", "XrefUnitShip": "BU.CDC.027", "ItemId": "ART50280098", "ItemQtyUom": "PIECE", "ItemQtyOrig": 1, "ItemQtyAct": 1, "ItemQtyResvStock": 0, "ItemQtyResvGit": 0, "ItemQtyResvBackord": 0, "SywVersion": 1, "SywLatest": "201937", "SywLatestQty": 1, "SywLatestQtyDelta": 0, "SywPrevious": "201937", "SywPreviousQty": 1, "SywPreviousQtyDelta": 0, "ProjStatusCode": 1000, "ProjStatusCodeOld": 0, "ProjStatus": "Created", "StatusCode": 1000, "StatusCodeOld": 0, "Status": "Created",
+                    "OrderLineDetails": []}
+            ]
+        },
+        { "MetaInsertDate": "2019-09-06T15:03:37.461", "MetaFilterDate": "2019-09-09T07:56:45.952", "Event": "Created", "MsgSource": "ISOM", "OrderType": "0003", "OrderSubType": null, "OrderNo": "Y100180899.GB", "ZipCode": "E14 9JU", "EntryType": null, "CreateDate": "2019-09-06T15:03:37", "DeliveredDate": null, "GaSell": "CTY.GB", "UnitSell": "BU.STO.472", "OriginalTotalAmount": null, "CurrencyCode": null, "VatValue": 0, "DeliveryValue": 0, "ServiceType": null, "PaymentMethod": null, "PaymentStatus": null, "ProjStatusCode": 5000, "ProjStatusCodeOld": 1000, "ProjStatus": "Dispatched", "StatusCode": 5000, "StatusCodeOld": 1000, "Status": "Dispatched",
+            "WorkOrders": [] ,
+            "OrderLines": [
+                    { "MetaInsertDate": "2019-09-06T15:03:37.462", "MetaFilterDate": "2019-09-09T07:56:45.952", "CompLineNo": 1, "OrderLineNo": 0, "XrefOrderNo": "1049860405.A01", "XrefCompLineNo": 2, "XrefOrderLineNo": 3, "LineType": "PROD", "DeliveredDate": null, "InternalReturnDate": null, "DeliveryMethod": null, "DdcFlag": 0, "DeliveryType": null, "ServiceProviderId": null, "RetailPrice": 15, "VatValue": null, "DeliveryValue": null, "UnitFictional": "BU.STO.185", "UnitShip": "BU.STO.185", "XrefUnitShip": "BU.CDC.027", "ItemId": "ART50280098", "ItemQtyUom": "PIECE", "ItemQtyOrig": 1, "ItemQtyAct": 1, "ItemQtyResvStock": 0, "ItemQtyResvGit": 0, "ItemQtyResvBackord": 0, "SywVersion": 1, "SywLatest": "201937", "SywLatestQty": 1, "SywLatestQtyDelta": 0, "SywPrevious": "201937", "SywPreviousQty": 1, "SywPreviousQtyDelta": 0, "ProjStatusCode": 5000, "ProjStatusCodeOld": 1000, "ProjStatus": "Dispatched", "StatusCode": 5000, "StatusCodeOld": 1000, "Status": "Dispatched",
+                    "OrderLineDetails": [
+                        { "MetaInsertDate": "2019-09-09T07:56:45.952", "MetaFilterDate": "2019-09-09T07:56:45.952", "DetailLineNo": 1, "DetailType": "CDU", "CduId": "2701175847", "CduCsmState": "C", "CsmlId": null, "UnitCnor": "BU.LSC.1728", "UnitDsp": "BU.LSC.1728", "UnitCnee": "BU.STO.185", "UnitSup": null, "XrefCsmlId": null, "XrefCduId": "2701175847", "ItemQty": 1, "LoadedAtCuDate": "2019-09-08T23:09:00", "DispatchedDate": "2019-09-09T07:13:00", "ReceivedAtHubDate": null, "ReceivedAtHubDate1": null, "LoadedOnTruckDate": null, "LoadedOnTruckDate1": null, "AvailableForPupDate": null, "AvailableForPupDate1": null, "DeliveredDate": null, "MissingDate": null, "DamagedDate": null, "DeliveryFailureDate": null, "DeliveryRefusedDate": null, "InternalReturnDate": null, "ProjStatusCode": 5000, "ProjStatusCodeOld": 1000, "ProjStatus": "Dispatched", "StatusCode": 5000, "StatusCodeOld": 1000, "Status": "Dispatched" }
+                    ]}
+            ]
+        },
+        { "MetaInsertDate": "2019-09-06T15:03:37.461", "MetaFilterDate": "2019-09-10T01:12:18.863", "Event": "Delivered", "MsgSource": "ISOM", "OrderType": "0003", "OrderSubType": null, "OrderNo": "Y100180899.GB", "ZipCode": "E14 9JU", "EntryType": null, "CreateDate": "2019-09-06T15:03:37", "DeliveredDate": "2019-09-10T01:12:18", "GaSell": "CTY.GB", "UnitSell": "BU.STO.472", "OriginalTotalAmount": null, "CurrencyCode": null, "VatValue": 0, "DeliveryValue": 0, "ServiceType": null, "PaymentMethod": null, "PaymentStatus": null, "ProjStatusCode": 8000, "ProjStatusCodeOld": 5000, "ProjStatus": "Delivered", "StatusCode": 8000, "StatusCodeOld": 5000, "Status": "Delivered", "WorkOrders": [] ,
+            "OrderLines": [
+                    { "MetaInsertDate": "2019-09-06T15:03:37.462", "MetaFilterDate": "2019-09-10T01:12:18.863", "CompLineNo": 1, "OrderLineNo": 0, "XrefOrderNo": "1049860405.A01", "XrefCompLineNo": 2, "XrefOrderLineNo": 3, "LineType": "PROD", "DeliveredDate": "2019-09-10T01:12:18", "InternalReturnDate": null, "DeliveryMethod": null, "DdcFlag": 0, "DeliveryType": null, "ServiceProviderId": null, "RetailPrice": 15, "VatValue": null, "DeliveryValue": null, "UnitFictional": "BU.STO.185", "UnitShip": "BU.STO.185", "XrefUnitShip": "BU.CDC.027", "ItemId": "ART50280098", "ItemQtyUom": "PIECE", "ItemQtyOrig": 1, "ItemQtyAct": 1, "ItemQtyResvStock": 0, "ItemQtyResvGit": 0, "ItemQtyResvBackord": 0, "SywVersion": 1, "SywLatest": "201937", "SywLatestQty": 1, "SywLatestQtyDelta": 0, "SywPrevious": "201937", "SywPreviousQty": 1, "SywPreviousQtyDelta": 0, "ProjStatusCode": 8000, "ProjStatusCodeOld": 5000, "ProjStatus": "Delivered", "StatusCode": 8000, "StatusCodeOld": 5000, "Status": "Delivered",
+                    "OrderLineDetails": [
+                        { "MetaInsertDate": "2019-09-09T07:56:45.952", "MetaFilterDate": "2019-09-09T12:56:05.007", "DetailLineNo": 1, "DetailType": "CDU", "CduId": "2701175847", "CduCsmState": "C", "CsmlId": null, "UnitCnor": "BU.LSC.1728", "UnitDsp": "BU.LSC.1728", "UnitCnee": "BU.STO.185", "UnitSup": null, "XrefCsmlId": null, "XrefCduId": "2701175847", "ItemQty": 1, "LoadedAtCuDate": "2019-09-08T23:09:00", "DispatchedDate": "2019-09-09T07:13:00", "ReceivedAtHubDate": null, "ReceivedAtHubDate1": null, "LoadedOnTruckDate": null, "LoadedOnTruckDate1": null, "AvailableForPupDate": null, "AvailableForPupDate1": null, "DeliveredDate": "2019-09-10T01:12:18", "MissingDate": null, "DamagedDate": null, "DeliveryFailureDate": null, "DeliveryRefusedDate": null, "InternalReturnDate": null, "ProjStatusCode": 8000, "ProjStatusCodeOld": 5000, "ProjStatus": "Delivered", "StatusCode": 8000, "StatusCodeOld": 5000, "Status": "Delivered" }
+                    ]}
+            ]
+        }
+    ],
+    "$ref": "#/definitions/OrderHeader"
+}
+
+
